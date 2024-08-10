@@ -7,7 +7,6 @@ import {
 	Stack,
 	Text,
 	WrapItem,
-	useColorMode,
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -20,18 +19,22 @@ const Conversation = ({ conversation, isOnline }) => {
 	const currentUser = useRecoilValue(userAtom);
 	const lastMessage = conversation.lastMessage;
 	const [selectedConversation, setSelectedConversation] = useRecoilState(selectedConversationAtom);
-	const colorMode = useColorMode();
 
-	console.log("selectedConverstion", selectedConversation);
+	const bgColor = useColorModeValue("gray.100", "black"); // Light background for light mode, black for dark mode
+	const hoverBgColor = useColorModeValue("gray.200", "gray.800"); // Slightly lighter on hover for dark mode
+	const selectedBgColor = useColorModeValue("gray.300", "gray.600"); // Background color for selected conversation
+	const textColor = useColorModeValue("black", "white"); // Text color for readability
+
 	return (
 		<Flex
 			gap={4}
 			alignItems={"center"}
-			p={"1"}
+			p={"2"}
+			bg={selectedConversation?._id === conversation._id ? selectedBgColor : bgColor}
+			color={textColor}
 			_hover={{
 				cursor: "pointer",
-				bg: useColorModeValue("gray.600", "gray.dark"),
-				color: "white",
+				bg: useColorModeValue("gray.200", "gray.800"), // Hover color for both light and dark modes
 			}}
 			onClick={() =>
 				setSelectedConversation({
@@ -41,9 +44,6 @@ const Conversation = ({ conversation, isOnline }) => {
 					username: user.username,
 					mock: conversation.mock,
 				})
-			}
-			bg={
-				selectedConversation?._id === conversation._id ? (colorMode === "light" ? "gray.400" : "gray.dark") : ""
 			}
 			borderRadius={"md"}
 		>
@@ -56,22 +56,20 @@ const Conversation = ({ conversation, isOnline }) => {
 					}}
 					src={user.profilePic}
 				>
-					{isOnline ? <AvatarBadge boxSize='1em' bg='green.500' /> : ""}
+					{isOnline && <AvatarBadge boxSize='1em' bg='green.500' />}
 				</Avatar>
 			</WrapItem>
 
 			<Stack direction={"column"} fontSize={"sm"}>
-				<Text fontWeight='700' display={"flex"} alignItems={"center"}>
+				<Text fontWeight='700' display={"flex"} alignItems={"center"} color={textColor}>
 					{user.username} <Image src='/verified.png' w={4} h={4} ml={1} />
 				</Text>
-				<Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
+				<Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1} color={textColor}>
 					{currentUser._id === lastMessage.sender ? (
-						<Box color={lastMessage.seen ? "blue.400" : ""}>
+						<Box color={lastMessage.seen ? "blue.400" : textColor}>
 							<BsCheck2All size={16} />
 						</Box>
-					) : (
-						""
-					)}
+					) : null}
 					{lastMessage.text.length > 18
 						? lastMessage.text.substring(0, 18) + "..."
 						: lastMessage.text || <BsFillImageFill size={16} />}
